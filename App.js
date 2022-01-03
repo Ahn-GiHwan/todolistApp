@@ -31,7 +31,7 @@ export default function App() {
   const addTodo = () => {
     if (!text) return;
 
-    const newTodos = { ...todos, [Date.now()]: { text, work: working } };
+    const newTodos = { ...todos, [Date.now()]: { text, working } };
 
     setTodos(newTodos);
     setText("");
@@ -73,7 +73,7 @@ export default function App() {
       <ScrollView>
         {Object.keys(todos).map(
           (key) =>
-            todos[key].work === working && (
+            todos[key].working === working && (
               <View key={key} style={styles.todo}>
                 <Text style={styles.todoText}>{todos[key].text}</Text>
               </View>
