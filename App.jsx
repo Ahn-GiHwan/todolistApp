@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { theme } from "./color";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Checkbox from "expo-checkbox";
 
 export default function App() {
   LogBox.ignoreLogs(["Remote debugger"]);
@@ -80,7 +81,10 @@ export default function App() {
 
   const addTodo = async (data) => {
     if (!text) return;
-    const newTodos = { ...data, [Date.now()]: { text, working } };
+    const newTodos = {
+      ...data,
+      [Date.now()]: { text, working, isChecked: false },
+    };
     setTodos(newTodos);
     await saveTodos(newTodos);
     setText("");
@@ -101,9 +105,16 @@ export default function App() {
     ]);
   };
 
+  const setChecked = async (id) => {
+    const newTodos = { ...todos };
+    newTodos[id].isChecked = !newTodos[id].isChecked;
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
+
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
       <View style={styles.header}>
         <TouchableOpacity onPress={work}>
           <Text
@@ -139,7 +150,19 @@ export default function App() {
           (key) =>
             todos[key].working === working && (
               <View key={key} style={styles.todo}>
-                <Text style={styles.todoText}>{todos[key].text}</Text>
+                <View style={styles.todoLeft}>
+                  <Checkbox
+                    style={styles.checkbox}
+                    value={todos[key].isChecked}
+                    onValueChange={() => setChecked(key)}
+                    color={todos[key].isChecked ? theme.grey : "white"}
+                  />
+                  {todos[key].isChecked ? (
+                    <Text style={styles.todoTextCheck}>{todos[key].text}</Text>
+                  ) : (
+                    <Text style={styles.todoText}>{todos[key].text}</Text>
+                  )}
+                </View>
                 <TouchableOpacity onPress={() => deleteTodo(key)}>
                   <Text>❌</Text>
                 </TouchableOpacity>
@@ -181,12 +204,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
     paddingVertical: 20,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 15,
+  },
+  todoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  checkbox: {
+    marginRight: 10,
   },
   todoText: {
     color: "white",
     fontSize: 16,
     fontWeight: "500",
+  },
+  todoTextCheck: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+    textDecorationLine: "line-through",
+    color: theme.grey,
   },
 });
