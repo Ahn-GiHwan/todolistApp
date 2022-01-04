@@ -113,6 +113,25 @@ export default function App() {
     await saveTodos(newTodos);
   };
 
+  const setTodoText = async (id, value) => {
+    const newTodos = { ...todos };
+    newTodos[id].text = value;
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
+
+  const editTodo = (key, text) => {
+    Alert.prompt(
+      `[${text}] 수정`,
+      "바꿀 내용을 입력하세요",
+      (e) => {
+        setTodoText(key, e);
+      },
+      "plain-text",
+      text
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -165,7 +184,9 @@ export default function App() {
                   )}
                 </View>
                 <View style={styles.icons}>
-                  <TouchableOpacity onPress={() => alert("hi")}>
+                  <TouchableOpacity
+                    onPress={() => editTodo(key, todos[key].text)}
+                  >
                     <Feather name="edit" size={18} color="#2BF603" />
                   </TouchableOpacity>
                   <TouchableOpacity
