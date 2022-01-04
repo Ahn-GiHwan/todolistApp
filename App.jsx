@@ -44,7 +44,7 @@ export default function App() {
   const getStorage = async () => {
     try {
       const getWorking = await AsyncStorage.getItem(STORAGE_WORKING_KEY);
-      setWorking(JSON.parse(getWorking));
+      if (getWorking) setWorking(JSON.parse(getWorking));
     } catch (error) {
       alert("error: ", e);
     }
@@ -74,7 +74,7 @@ export default function App() {
   const getTodos = async () => {
     try {
       const todos = await AsyncStorage.getItem(STORAGE_TODO_KEY);
-      setTodos(JSON.parse(todos));
+      if (todos) setTodos(JSON.parse(todos));
     } catch (e) {
       alert("error: ", e);
     }
