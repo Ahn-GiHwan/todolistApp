@@ -13,6 +13,7 @@ import {
 import { theme } from "./color";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Checkbox from "expo-checkbox";
+import { Feather } from "@expo/vector-icons";
 
 export default function App() {
   LogBox.ignoreLogs(["Remote debugger"]);
@@ -90,8 +91,8 @@ export default function App() {
     setText("");
   };
 
-  const deleteTodo = (id) => {
-    Alert.alert("삭제", "정말 삭제하겠습니까?", [
+  const deleteTodo = (id, text) => {
+    Alert.alert(`[${text}] 삭제`, "정말 삭제하겠습니까?", [
       { text: "Cancel" },
       {
         text: "OK",
@@ -163,9 +164,16 @@ export default function App() {
                     <Text style={styles.todoText}>{todos[key].text}</Text>
                   )}
                 </View>
-                <TouchableOpacity onPress={() => deleteTodo(key)}>
-                  <Text>❌</Text>
-                </TouchableOpacity>
+                <View style={styles.icons}>
+                  <TouchableOpacity onPress={() => alert("hi")}>
+                    <Feather name="edit" size={18} color="#2BF603" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => deleteTodo(key, todos[key].text)}
+                  >
+                    <Feather name="x" size={24} color="red" />
+                  </TouchableOpacity>
+                </View>
               </View>
             )
         )}
@@ -204,7 +212,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
     paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 17,
     borderRadius: 15,
   },
   todoLeft: {
@@ -225,5 +233,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     textDecorationLine: "line-through",
     color: theme.grey,
+  },
+  icons: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: 50,
   },
 });
