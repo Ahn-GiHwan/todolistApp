@@ -8,33 +8,97 @@ import {
   TextInput,
   ScrollView,
   LogBox,
+  Alert,
 } from "react-native";
 import { theme } from "./color";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
   LogBox.ignoreLogs(["Remote debugger"]);
 
-  const [working, setWorking] = useState(true);
+  const [working, setWorking] = useState(false);
   const [text, setText] = useState("");
   const [todos, setTodos] = useState({});
+
+  const STORAGE_TODO_KEY = "@todos";
+  const STORAGE_WORKING_KEY = "@working";
+
+  useEffect(() => {
+    getStorage();
+    getTodos();
+  }, []);
 
   useEffect(() => {
     setText("");
   }, [working]);
 
-  const work = () => setWorking(true);
-  const travel = () => setWorking(false);
+  const setStorage = async (str) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_WORKING_KEY, JSON.stringify(str));
+    } catch (error) {
+      alert(error);
+    }
+  };
+  const getStorage = async () => {
+    try {
+      const getWorking = await AsyncStorage.getItem(STORAGE_WORKING_KEY);
+      setWorking(JSON.parse(getWorking));
+    } catch (error) {
+      alert("error: ", e);
+    }
+  };
+
+  const work = async () => {
+    setWorking(true);
+    await setStorage(true);
+  };
+
+  const travel = async () => {
+    setWorking(false);
+    await setStorage(false);
+  };
   const onChangeText = (payload) => {
     setText(payload);
   };
 
-  const addTodo = () => {
+  const saveTodos = async (todos) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_TODO_KEY, JSON.stringify(todos));
+    } catch (e) {
+      alert("error: ", e);
+    }
+  };
+
+  const getTodos = async () => {
+    try {
+      const todos = await AsyncStorage.getItem(STORAGE_TODO_KEY);
+      setTodos(JSON.parse(todos));
+    } catch (e) {
+      alert("error: ", e);
+    }
+  };
+
+  const addTodo = async (data) => {
     if (!text) return;
-
-    const newTodos = { ...todos, [Date.now()]: { text, working } };
-
+    const newTodos = { ...data, [Date.now()]: { text, working } };
     setTodos(newTodos);
+    await saveTodos(newTodos);
     setText("");
+  };
+
+  const deleteTodo = (id) => {
+    Alert.alert("삭제", "정말 삭제하겠습니까?", [
+      { text: "Cancel" },
+      {
+        text: "OK",
+        onPress: async () => {
+          const newTodos = { ...todos };
+          delete newTodos[id];
+          setTodos(newTodos);
+          await saveTodos(newTodos);
+        },
+      },
+    ]);
   };
 
   return (
@@ -67,7 +131,7 @@ export default function App() {
         placeholder={working ? "Add a To Do" : "Where do you want to go?"}
         returnKeyType="done"
         onChangeText={onChangeText}
-        onSubmitEditing={addTodo}
+        onSubmitEditing={() => addTodo(todos)}
         value={text}
       />
       <ScrollView>
@@ -76,6 +140,9 @@ export default function App() {
             todos[key].working === working && (
               <View key={key} style={styles.todo}>
                 <Text style={styles.todoText}>{todos[key].text}</Text>
+                <TouchableOpacity onPress={() => deleteTodo(key)}>
+                  <Text>❌</Text>
+                </TouchableOpacity>
               </View>
             )
         )}
@@ -110,9 +177,11 @@ const styles = StyleSheet.create({
   },
   todo: {
     backgroundColor: theme.todoBg,
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 10,
     paddingVertical: 20,
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
     borderRadius: 15,
   },
   todoText: {
